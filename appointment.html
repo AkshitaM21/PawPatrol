@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment - Paw Patrol</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- single feather icons include -->
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .appointment-gradient {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
+        }
+        
+        .pet-type-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .time-slot {
+            transition: all 0.2s ease;
+        }
+        
+        .time-slot:hover {
+            transform: scale(1.05);
+        }
+        
+        .time-slot.selected {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        /* TimeTrack slider styles merged */
+        .slide {
+            transition: transform 0.5s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        .slide-next {
+            transform: translateX(100%);
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+        .slide-active {
+            transform: translateX(0);
+            opacity: 1;
+            position: relative;
+        }
+        .slide-prev {
+            transform: translateX(-100%);
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        /* small helper for slider container when merged */
+        .slider-wrap { position: relative; min-height: 380px; }
+    </style>
+</head>
+<body class="bg-white text-gray-800">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md fixed w-full z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <a href="index.html" class="flex items-center space-x-2">
+                    <i data-feather="heart" class="text-blue-500 w-8 h-8"></i>
+                    <a href="index.html" class="text-xl font-bold text-white hover:text-white">Paw Patrol</a>
+                </a>
+            </div>
+            <div class="hidden md:flex space-x-8">
+                <a href="index.html" class="text-gray-600 hover:text-blue-600">Home</a>
+                <a href="index.html#services" class="text-gray-600 hover:text-blue-600">Services</a>
+                <a href="index.html#about" class="text-gray-600 hover:text-blue-600">About</a>
+                <a href="index.html#doctors" class="text-gray-600 hover:text-blue-600">Doctors</a>
+                <a href="index.html#contact" class="text-gray-600 hover:text-blue-600">Contact</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="appointment.html" class="hidden md:inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full font-medium transition duration-300">
+                    Book Appointment
+                </a>
+                <button id="mobile-menu-button" class="md:hidden text-gray-600 focus:outline-none">
+                    <i data-feather="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white py-2 px-4 shadow-lg">
+            <a href="index.html" class="block py-2 text-gray-600 hover:text-blue-600">Home</a>
+            <a href="index.html#services" class="block py-2 text-gray-600 hover:text-blue-600">Services</a>
+            <a href="index.html#about" class="block py-2 text-gray-600 hover:text-blue-600">About</a>
+            <a href="index.html#doctors" class="block py-2 text-gray-600 hover:text-blue-600">Doctors</a>
+            <a href="index.html#contact" class="block py-2 text-gray-600 hover:text-blue-600">Contact</a>
+            <a href="appointment.html" class="w-full mt-2 inline-block text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full font-medium transition duration-300">
+                Book Appointment
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-32 pb-16">
+        <!-- Appointment Header -->
+        <section class="appointment-gradient py-12">
+            <div class="container mx-auto px-4 text-center">
+                <h1 class="text-4xl font-bold text-gray-800 mb-4">Book Your Pet's Appointment</h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Schedule a visit with our expert veterinarians for comprehensive pet care.</p>
+            </div>
+        </section>
+
+        <!-- Merged: TimeTrack Slider section (inserts above existing appointment steps) -->
+        <section class="py-8 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden slider-wrap">
+                    <!-- Date Selection Slide -->
+                    <div class="slide slide-active p-6 h-full flex flex-col" id="date-slide">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold text-gray-800">Select Date (Quick Picker)</h2>
+                            <i data-feather="calendar" class="text-indigo-500"></i>
+                        </div>
+                        
+                        <div class="grid grid-cols-7 gap-2 mb-4">
+                            <div class="text-center font-medium text-gray-500">S</div>
+                            <div class="text-center font-medium text-gray-500">M</div>
+                            <div class="text-center font-medium text-gray-500">T</div>
+                            <div class="text-center font-medium text-gray-500">W</div>
+                            <div class="text-center font-medium text-gray-500">T</div>
+                            <div class="text-center font-medium text-gray-500">F</div>
+                            <div class="text-center font-medium text-gray-500">S</div>
+                        </div>
+                        
+                        <div class="grid grid-cols-7 gap-2" id="calendar-days">
+                            <!-- Calendar days will be populated by JavaScript -->
+                        </div>
+                        
+                        <div class="mt-auto flex justify-between pt-4 border-t border-gray-200">
+                            <button class="px-4 py-2 text-gray-500 rounded-lg" disabled>
+                                <i data-feather="arrow-left"></i>
+                            </button>
+                            <button class="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition" id="date-next">
+                                Next <i data-feather="arrow-right" class="ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Time Selection Slide -->
+                    <div class="slide slide-next p-6 h-full flex flex-col" id="time-slide">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold text-gray-800">Select Time (Quick Picker)</h2>
+                            <i data-feather="clock" class="text-indigo-500"></i>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Available Times</label>
+                            <div class="grid grid-cols-3 gap-3" id="time-slots">
+                                <!-- Time slots will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div class="mt-auto flex justify-between pt-4 border-t border-gray-200">
+                            <button class="px-4 py-2 text-gray-500 rounded-lg hover:bg-gray-100 transition" id="time-prev">
+                                <i data-feather="arrow-left" class="mr-2"></i> Back
+                            </button>
+                            <button class="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition" id="time-next">
+                                Next <i data-feather="arrow-right" class="ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Confirmation Slide -->
+                    <div class="slide slide-next p-6 h-full flex flex-col" id="confirm-slide">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold text-gray-800">Confirm Quick Selection</h2>
+                            <i data-feather="check-circle" class="text-green-500"></i>
+                        </div>
+                        <div class="bg-indigo-50 rounded-lg p-4 mb-6">
+                            <h3 class="font-semibold text-indigo-800 mb-3">Booking Summary</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-start">
+                                    <i data-feather="calendar" class="text-indigo-500 mr-2 mt-1"></i>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Date</p>
+                                        <p id="selected-date-display" class="font-medium">Not selected</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <i data-feather="clock" class="text-indigo-500 mr-2 mt-1"></i>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Time</p>
+                                        <p id="selected-time-display" class="font-medium">Not selected</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-auto flex justify-between pt-4 border-t border-gray-200">
+                            <button class="px-4 py-2 text-gray-500 rounded-lg hover:bg-gray-100 transition" id="confirm-prev">
+                                <i data-feather="arrow-left" class="mr-2"></i> Back
+                            </button>
+                            <button class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition" id="confirm-submit">
+                                Confirm <i data-feather="check" class="ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Success Slide -->
+                    <div class="slide slide-next p-6 h-full flex flex-col items-center justify-center text-center" id="success-slide">
+                        <div class="bg-green-100 p-4 rounded-full mb-4">
+                            <i data-feather="check-circle" class="text-green-500 w-12 h-12"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-2">Booking Confirmed!</h2>
+                        <p class="text-gray-600 mb-6">Your booking details have been confirmed.</p>
+                        <p class="text-sm text-gray-500 mb-6" id="success-details"></p>
+                        <button class="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition" id="success-restart">
+                            <i data-feather="refresh-cw" class="mr-2"></i> Book Another
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Appointment Steps (original) -->
+        <section class="py-12 bg-white">
+            <div class="container mx-auto px-4">
+                <!-- Steps Indicator -->
+                <div class="flex justify-center mb-12">
+                    <div class="flex items-center">
+                        <div class="flex flex-col items-center">
+                            <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mb-2" id="step-1-indicator">1</div>
+                            <p class="text-sm font-medium text-blue-600" id="step-1-label">Service & Pet</p>
+                        </div>
+                        <div class="w-16 md:w-24 h-1 bg-gray-300 mx-2"></div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold mb-2" id="step-2-indicator">2</div>
+                            <p class="text-sm font-medium text-gray-500" id="step-2-label">Date & Time</p>
+                        </div>
+                        <div class="w-16 md:w-24 h-1 bg-gray-300 mx-2"></div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold mb-2" id="step-3-indicator">3</div>
+                            <p class="text-sm font-medium text-gray-500" id="step-3-label">Details</p>
+                        </div>
+                        <div class="w-16 md:w-24 h-1 bg-gray-300 mx-2"></div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold mb-2" id="step-4-indicator">4</div>
+                            <p class="text-sm font-medium text-gray-500" id="step-4-label">Confirmation</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 1: Service & Pet Type -->
+                <div id="step-1" class="step-content">
+                    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                        <div class="p-8">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-6">Select Service & Pet Type</h2>
+                            
+                            <div class="mb-8">
+                                <h3 class="text-lg font-medium text-gray-800 mb-4">1. Choose Service</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <button class="service-option bg-white border border-blue-200 rounded-lg p-4 text-left hover:bg-blue-50 transition" data-service="consultation">
+                                        <div class="flex items-center">
+                                            <i data-feather="clipboard" class="text-blue-500 mr-3"></i>
+                                            <div>
+                                                <h4 class="font-semibold text-gray-800">General Consultation</h4>
+                                                <p class="text-sm text-gray-500 mt-1">₹500 - ₹1000</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                    <button class="service-option bg-white border border-blue-200 rounded-lg p-4 text-left hover:bg-blue-50 transition" data-service="vaccination">
+                                        <div class="flex items-center">
+                                            <i data-feather="shield" class="text-blue-500 mr-3"></i>
+                                            <div>
+                                                <h4 class="font-semibold text-gray-800">Vaccination</h4>
+                                                <p class="text-sm text-gray-500 mt-1">₹800 - ₹2500</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                    <button class="service-option bg-white border border-blue-200 rounded-lg p-4 text-left hover:bg-blue-50 transition" data-service="dental">
+                                        <div class="flex items-center">
+                                            <i data-feather="activity" class="text-blue-500 mr-3"></i>
+                                            <div>
+                                                <h4 class="font-semibold text-gray-800">Dental Care</h4>
+                                                <p class="text-sm text-gray-500 mt-1">₹1500+</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                    <button class="service-option bg-white border border-blue-200 rounded-lg p-4 text-left hover:bg-blue-50 transition" data-service="surgery">
+                                        <div class="flex items-center">
+                                            <i data-feather="scissors" class="text-blue-500 mr-3"></i>
+                                            <div>
+                                                <h4 class="font-semibold text-gray-800">Surgery</h4>
+                                                <p class="text-sm text-gray-500 mt-1">₹5000+</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                    <button class="service-option bg-white border border-blue-200 rounded-lg p-4 text-left hover:bg-blue-50 transition" data-service="grooming">
+                                        <div class="flex items-center">
+                                            <i data-feather="smile" class="text-blue-500 mr-3"></i>
+                                            <div>
+                                                <h4 class="font-semibold text-gray-800">Grooming</h4>
+                                                <p class="text-sm text-gray-500 mt-1">₹1200 - ₹5000</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                    <button class="service-option bg-white border border-blue-200 rounded-lg p-4 text-left hover:bg-blue-50 transition" data-service="emergency">
+                                        <div class="flex items-center">
+                                            <i data-feather="alert-triangle" class="text-blue-500 mr-3"></i>
+                                            <div>
+                                                <h4 class="font-semibold text-gray-800">Emergency Care</h4>
+                                                <p class="text-sm text-gray-500 mt-1">₹3000+</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- MOVED: Choose Date (now placed immediately after services) -->
+                            <div class="mb-8">
+                                <h3 class="text-lg font-medium text-gray-800 mb-4">2. Choose Date</h3>
+                                <div class="flex overflow-x-auto pb-4 -mx-2">
+                                    <button class="date-option mx-2 min-w-[100px] bg-white border border-blue-200 rounded-lg p-4 text-center hover:bg-blue-50 transition">
+                                        <div class="text-sm text-gray-500">Today</div>
+                                        <div class="font-bold text-gray-800 text-lg">15</div>
+                                        <div class="text-sm text-gray-500">Jun</div>
+                                    </button>
+                                    <button class="date-option mx-2 min-w-[100px] bg-white border border-blue-200 rounded-lg p-4 text-center hover:bg-blue-50 transition">
+                                        <div class="text-sm text-gray-500">Tomorrow</div>
+                                        <div class="font-bold text-gray-800 text-lg">16</div>
+                                        <div class="text-sm text-gray-500">Jun</div>
+                                    </button>
+                                    <button class="date-option mx-2 min-w-[100px] bg-white border border-blue-200 rounded-lg p-4 text-center hover:bg-blue-50 transition">
+                                        <div class="text-sm text-gray-500">Sat</div>
+                                        <div class="font-bold text-gray-800 text-lg">17</div>
+                                        <div class="text-sm text-gray-500">Jun</div>
+                                    </button>
+                                    <button class="date-option mx-2 min-w-[100px] bg-white border border-blue-200 rounded-lg p-4 text-center hover:bg-blue-50 transition">
+                                        <div class="text-sm text-gray-500">Sun</div>
+                                        <div class="font-bold text-gray-800 text-lg">18</div>
+                                        <div class="text-sm text-gray-500">Jun</div>
+                                    </button>
+                                    <button class="date-option mx-2 min-w-[100px] bg-white border border-blue-200 rounded-lg p-4 text-center hover:bg-blue-50 transition">
+                                        <div class="text-sm text-gray-500">Mon</div>
+                                        <div class="font-bold text-gray-800 text-lg">19</div>
+                                        <div class="text-sm text-gray-500">Jun</div>
+                                    </button>
+                                    <button class="date-option mx-2 min-w-[100px] bg-white border border-blue-200 rounded-lg p-4 text-center hover:bg-blue-50 transition">
+                                        <div class="text-sm text-gray-500">Tue</div>
+                                        <div class="font-bold text-gray-800 text-lg">20</div>
+                                        <div class="text-sm text-gray-500">Jun</div>
+                                    </button>
+                                    <button class="date-option mx-2 min-w-[100px] bg-white border border-blue-200 rounded-lg p-4 text-center hover:bg-blue-50 transition">
+                                        <div class="text-sm text-gray-500">Wed</div>
+                                        <div class="font-bold text-gray-800 text-lg">21</div>
+                                        <div class="text-sm text-gray-500">Jun</div>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-800 mb-4">3. Pet Information</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                    <button class="pet-type-card bg-white border border-blue-200 rounded-lg p-4 flex flex-col items-center hover:bg-blue-50 transition" data-pet-type="dog">
+                                        <i data-feather="github" class="text-blue-500 w-8 h-8 mb-2"></i>
+                                        <span class="font-medium">Dog</span>
+                                    </button>
+                                    <button class="pet-type-card bg-white border border-blue-200 rounded-lg p-4 flex flex-col items-center hover:bg-blue-50 transition" data-pet-type="cat">
+                                        <i data-feather="box" class="text-blue-500 w-8 h-8 mb-2"></i>
+                                        <span class="font-medium">Cat</span>
+                                    </button>
+                                    <button class="pet-type-card bg-white border border-blue-200 rounded-lg p-4 flex flex-col items-center hover:bg-blue-50 transition" data-pet-type="bird">
+                                        <i data-feather="twitter" class="text-blue-500 w-8 h-8 mb-2"></i>
+                                        <span class="font-medium">Bird</span>
+                                    </button>
+                                    <button class="pet-type-card bg-white border border-blue-200 rounded-lg p-4 flex flex-col items-center hover:bg-blue-50 transition" data-pet-type="other">
+                                        <i data-feather="help-circle" class="text-blue-500 w-8 h-8 mb-2"></i>
+                                        <span class="font-medium">Other</span>
+                                    </button>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label for="pet-name" class="block text-gray-700 font-medium mb-2">Pet's Name</label>
+                                        <input type="text" id="pet-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label for="pet-age" class="block text-gray-700 font-medium mb-2">Pet's Age</label>
+                                        <input type="text" id="pet-age" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label for="pet-breed" class="block text-gray-700 font-medium mb-2">Breed</label>
+                                        <input type="text" id="pet-breed" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label for="pet-gender" class="block text-gray-700 font-medium mb-2">Gender</label>
+                                        <select id="pet-gender" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="">Select</option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-8 text-right">
+                                <button id="next-to-step-2" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                    Next: Select Date & Time
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Date & Time -->
+                <div id="step-2" class="step-content hidden">
+                    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                        <div class="p-8">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-6">Select Date & Time</h2>
+                            
+                            <div class="mb-8">
+                                <h3 class="text-lg font-medium text-gray-800 mb-4">1. Choose Date</h3>
+                                <div class="flex overflow-x-auto pb-4 -mx-2">
+                                    <button class="date-option mx-2 min-w-[100px] bg-white border border-blue-200 rounded-lg p-4 text-center hover:bg-blue-50 transition">
+                                        <div class="text-sm text-gray-500">Today</div>
+                                        <div class="font-bold text-gray-800 text-lg">15</div>
+                                        <div class="text-sm text-gray-500">Jun</div>
+                                    </button>
+                                    <button class="date-option mx-2 min-w-[100px] bg-white border border-blue-200 rounded-lg p-4 text-center hover:bg-blue-50 transition">
+                                        <div class="text-sm text-gray-500">Tomorrow</div>
+                                        <div class="font-bold text-gray-800 text-lg">16</div>
+                                        <div class="text-sm text-gray-500">Jun</div>
+                                    </button>
+                                    <button class="date-option mx-2 min-w-[100px] bg-white border border-blue-200 rounded-lg p-4 text-center hover:bg-blue-50 transition">
+                                        <div class="text-sm text-gray-500">Sat</div>
+                                        <div class="font-bold text-gray-800 text-lg">17</div>
+                                        <div class="text-sm text-gray-500">Jun</div>
+                                    </button>
+                                    <button class="date-option mx-2 min-w-[100px] bg-white border border-blue-200 rounded-lg p-4 text-center hover:bg-blue-50 transition">
+                                        <div class="text-sm text-gray-500">Sun</div>
+                                        <div class="font-bold text-gray-800 text-lg">18</div>
+                                        <div class="text-sm text-gray-500">Jun</div>
+                                    </button>
+                                    <button class="date-option mx-2 min-w-[100px] bg-white border border-blue-200 rounded-lg p-4 text-center hover:bg-blue-50 transition">
+                                        <div class="text-sm text-gray-500">Mon</div>
+                                        <div class="font-bold text-gray-800 text-lg">19</div>
+                                        <div class="text-sm text-gray-500">Jun</div>
+                                    </button>
+                                    <button class="date-option mx-2 min-w-[100px] bg-white border border-blue-200 rounded-lg p-4 text-center hover:bg-blue-50 transition">
+                                        <div class="text-sm text-gray-500">Tue</div>
+                                        <div class="font-bold text-gray-800 text-lg">20</div>
+                                        <div class="text-sm text-gray-500">Jun</div>
+                                    </button>
+                                    <button class="date-option mx-2 min-w-[100px] bg-white border border-blue-200 rounded-lg p-4 text-center hover:bg-blue-50 transition">
+                                        <div class="text-sm text-gray-500">Wed</div>
+                                        <div class="font-bold text-gray-800 text-lg">21</div>
+                                        <div class="text-sm text-gray-500">Jun</div>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-8">
+                                <h3 class="text-lg font-medium text-gray-800 mb-4">2. Available Time Slots</h3>
+                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                    <button class="time-slot bg-white border border-blue-200 rounded-lg py-2 text-center hover:bg-blue-50 transition">9:00 AM</button>
+                                    <button class="time-slot bg-white border border-blue-200 rounded-lg py-2 text-center hover:bg-blue-50 transition">10:00 AM</button>
+                                    <button class="time-slot bg-white border border-blue-200 rounded-lg py-2 text-center hover:bg-blue-50 transition">11:00 AM</button>
+                                    <button class="time-slot bg-white border border-blue-200 rounded-lg py-2 text-center hover:bg-blue-50 transition">12:00 PM</button>
+                                    <button class="time-slot bg-white border border-blue-200 rounded-lg py-2 text-center hover:bg-blue-50 transition">1:00 PM</button>
+                                    <button class="time-slot bg-white border border-blue-200 rounded-lg py-2 text-center hover:bg-blue-50 transition">2:00 PM</button>
+                                    <button class="time-slot bg-white border border-blue-200 rounded-lg py-2 text-center hover:bg-blue-50 transition">3:00 PM</button>
+                                    <button class="time-slot bg-white border border-blue-200 rounded-lg py-2 text-center hover:bg-blue-50 transition">4:00 PM</button>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-8">
+                                <h3 class="text-lg font-medium text-gray-800 mb-4">3. Select Veterinarian (Optional)</h3>
+                                <select id="doctor" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Any Available Veterinarian</option>
+                                    <option value="dr-fisher">Dr. Conrad Fisher</option>
+                                    <option value="dr-carpenter">Dr. Sabrina Carpenter</option>
+                                    <option value="dr-pandey">Dr. Ananya Pandey</option>
+                                </select>
+                            </div>
+                            
+                            <div class="flex justify-between mt-8">
+                                <button id="back-to-step-1" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                                    <i data-feather="arrow-left" class="mr-2 w-4 h-4"></i> Back
+                                </button>
+                                <button id="next-to-step-3" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                    Next: Your Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Your Details -->
+                <div id="step-3" class="step-content hidden">
+                    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                        <div class="p-8">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-6">Your Contact Details</h2>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <div>
+                                    <label for="full-name" class="block text-gray-700 font-medium mb-2">Full Name</label>
+                                    <input type="text" id="full-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                                <div>
+                                    <label for="email" class="block text-gray-700 font-medium mb-2">Email</label>
+                                    <input type="email" id="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                                <div>
+                                    <label for="phone" class="block text-gray-700 font-medium mb-2">Phone Number</label>
+                                    <input type="tel" id="phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                                <div>
+                                    <label for="address" class="block text-gray-700 font-medium mb-2">Address</label>
+                                    <input type="text" id="address" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-8">
+                                <h3 class="text-lg font-medium text-gray-800 mb-4">Additional Notes</h3>
+                                <textarea id="notes" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Any special instructions or information about your pet's condition..."></textarea>
+                            </div>
+                            
+                            <div class="flex justify-between mt-8">
+                                <button id="back-to-step-2" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                                    <i data-feather="arrow-left" class="mr-2 w-4 h-4"></i> Back
+                                </button>
+                                <button id="next-to-step-4" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition duration-300">
+                                    Next: Confirm Appointment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Confirmation -->
+                <div id="step-4" class="step-content hidden">
+                    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                        <div class="p-8">
+                            <div class="text-center mb-8">
+                                <i data-feather="check-circle" class="text-green-500 w-16 h-16 mx-auto mb-4"></i>
+                                <h2 class="text-2xl font-bold text-gray-800 mb-2">Confirm Your Appointment</h2>
+                                <p class="text-gray-600">Please review your appointment details below</p>
+                            </div>
+                            
+                            <div class="bg-blue-50 rounded-lg p-6 mb-8">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <h3 class="font-medium text-gray-800 mb-3">Appointment Details</h3>
+                                        <div class="space-y-2">
+                                            <p class="text-gray-600"><span class="font-medium">Service:</span> <span id="confirm-service">General Consultation</span></p>
+                                            <p class="text-gray-600"><span class="font-medium">Date:</span> <span id="confirm-date">June 16, 2023</span></p>
+                                            <p class="text-gray-600"><span class="font-medium">Time:</span> <span id="confirm-time">10:00 AM</span></p>
+                                            <p class="text-gray-600"><span class="font-medium">Veterinarian:</span> <span id="confirm-doctor">Any Available</span></p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-medium text-gray-800 mb-3">Pet Details</h3>
+                                        <div class="space-y-2">
+                                            <p class="text-gray-600"><span class="font-medium">Name:</span> <span id="confirm-pet-name">Buddy</span></p>
+                                            <p class="text-gray-600"><span class="font-medium">Type:</span> <span id="confirm-pet-type">Dog</span></p>
+                                            <p class="text-gray-600"><span class="font-medium">Breed:</span> <span id="confirm-pet-breed">Golden Retriever</span></p>
+                                            <p class="text-gray-600"><span class="font-medium">Age:</span> <span id="confirm-pet-age">3 years</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-8">
+                                <h3 class="font-medium text-gray-800 mb-3">Your Contact Information</h3>
+                                <div class="space-y-2">
+                                    <p class="text-gray-600"><span class="font-medium">Name:</span> <span id="confirm-name">John Doe</span></p>
+                                    <p class="text-gray-600"><span class="font-medium">Email:</span> <span id="confirm-email">john@example.com</span></p>
+                                    <p class="text-gray-600"><span class="font-medium">Phone:</span> <span id="confirm-phone">+91 9876543210</span></p>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-8">
+                                <h3 class="font-medium text-gray-800 mb-3">Additional Notes</h3>
+                                <p class="text-gray-600" id="confirm-notes">None</p>
+                            </div>
+                            
+                            <div class="flex justify-between mt-8">
+                                <button id="back-to-step-3" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                                    <i data-feather="arrow-left" class="mr-2 w-4 h-4"></i> Back
+                                </button>
+                                <button id="confirm-appointment" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition duration-300">
+                                    Confirm Appointment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Appointment Form (newly added form section) -->
+        <section class="py-12 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                    <form action="/appointment" method="POST" class="p-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Book Your Appointment</h2>
+                        
+                        <div class="mb-4">
+                            <label for="name" class="block text-gray-700 font-medium mb-2">Name</label>
+                            <input type="text" id="name" name="name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="pet_name" class="block text-gray-700 font-medium mb-2">Pet Name</label>
+                            <input type="text" id="pet_name" name="pet_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="service" class="block text-gray-700 font-medium mb-2">Service</label>
+                            <input type="text" id="service" name="service" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="date" class="block text-gray-700 font-medium mb-2">Date</label>
+                            <input type="date" id="date" name="date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label for="time" class="block text-gray-700 font-medium mb-2">Time</label>
+                            <input type="time" id="time" name="time" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition duration-300">
+                            Book Appointment
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer (unchanged) -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i data-feather="heart" class="text-blue-500 w-8 h-8"></i>
+                        <a href="index.html" class="text-xl font-bold text-white hover:text-white">Paw Patrol</a>
+                    </div>
+                    <p class="text-gray-400 mb-4">Premium veterinary care for your beloved pets.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i data-feather="facebook"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i data-feather="twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i data-feather="instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i data-feather="linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white">Home</a></li>
+                        <li><a href="index.html#about" class="text-gray-400 hover:text-white">About Us</a></li>
+                        <li><a href="index.html#doctors" class="text-gray-400 hover:text-white">Our Doctors</a></li>
+                        <li><a href="index.html#contact" class="text-gray-400 hover:text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Services</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Consultations</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Vaccinations</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Surgery</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Dental Care</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Grooming</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Emergency Care</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Contact Us</h4>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <i data-feather="map-pin" class="text-blue-500 mr-3"></i>
+                            <span class="text-gray-400">SRM KTR Campus, Potheri, Chennai</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i data-feather="phone" class="text-blue-500 mr-3"></i>
+                            <span class="text-gray-400">+91 9876543210</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i data-feather="mail" class="text-blue-500 mr-3"></i>
+                            <span class="text-gray-400">pawpatrol@gmail.com</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 pt-8 text-center">
+                <p class="text-gray-400 text-sm">&copy; 2023 Paw Patrol. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Success Modal (unchanged) -->
+    <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-8 max-w-md mx-4 text-center">
+            <i data-feather="check-circle" class="text-green-500 w-16 h-16 mx-auto mb-4"></i>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Appointment Confirmed!</h3>
+            <p class="text-gray-600 mb-6">We've sent a confirmation to your email with all the details.</p>
+            <div class="flex space-x-4 justify-center">
+                <a href="index.html" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition duration-300">
+                    Back to Home
+                </a>
+                <a href="appointment.html" class="bg-white hover:bg-gray-100 text-blue-600 border border-blue-200 px-6 py-2 rounded-lg font-medium transition duration-300">
+                    New Appointment
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // initialize feather icons once and preselect service from query param
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.feather) feather.replace();
+
+            // preselect service if provided via query param
+            try {
+                const params = new URLSearchParams(location.search);
+                const preService = params.get('service');
+                if (preService) {
+                    // find matching button and simulate click to apply selection and enable next
+                    const btn = document.querySelector(`.service-option[data-service="${preService}"]`);
+                    if (btn) {
+                        btn.click();
+                        // show step 1 UI if goToStep exists
+                        if (typeof goToStep === 'function') goToStep(1);
+                        // scroll to step 1
+                        document.getElementById('step-1')?.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            } catch (e) {
+                // ignore malformed query
+                console.warn('Could not parse service param', e);
+            }
+        });
+
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+
+        // Appointment booking steps (existing)
+        let currentStep = 1;
+        const totalSteps = 4;
+        let selectedService = null;
+        let selectedPetType = null;
+        let selectedDate = null;
+        let selectedTime = null;
+        let selectedDoctor = null;
+
+        function goToStep(step) {
+            currentStep = step;
+            document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(`step-${step}`);
+            if (target) target.classList.remove('hidden');
+
+            for (let i = 1; i <= totalSteps; i++) {
+                const indicator = document.getElementById(`step-${i}-indicator`);
+                const label = document.getElementById(`step-${i}-label`);
+                if (!indicator || !label) continue;
+
+                if (i < step) {
+                    indicator.classList.remove('bg-gray-200', 'text-gray-500');
+                    indicator.classList.add('bg-blue-600', 'text-white');
+                    label.classList.remove('text-gray-500');
+                    label.classList.add('text-blue-600');
+                } else if (i === step) {
+                    indicator.classList.remove('bg-gray-200', 'text-gray-500');
+                    indicator.classList.add('bg-blue-600', 'text-white');
+                    label.classList.remove('text-gray-500');
+                    label.classList.add('text-blue-600');
+                } else {
+                    indicator.classList.remove('bg-blue-600', 'text-white');
+                    indicator.classList.add('bg-gray-200', 'text-gray-500');
+                    label.classList.remove('text-blue-600');
+                    label.classList.add('text-gray-500');
+                }
+            }
+        }
+
+        // service / pet / date / time handlers (unchanged)
+        document.querySelectorAll('.service-option').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.service-option').forEach(btn => btn.classList.remove('bg-blue-50', 'border-blue-500', 'text-blue-600'));
+                this.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-600');
+                selectedService = this.getAttribute('data-service');
+                document.getElementById('next-to-step-2') && (document.getElementById('next-to-step-2').disabled = false);
+            });
+        });
+
+        document.querySelectorAll('.pet-type-card').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.pet-type-card').forEach(btn => btn.classList.remove('bg-blue-50', 'border-blue-500', 'text-blue-600'));
+                this.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-600');
+                selectedPetType = this.getAttribute('data-pet-type');
+            });
+        });
+
+        // updated date-option handler: selecting a date (now in Step 1) enables next-to-step-2
+        document.querySelectorAll('.date-option').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.date-option').forEach(btn => btn.classList.remove('bg-blue-50', 'border-blue-500', 'text-blue-600'));
+                this.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-600');
+                selectedDate = this.getAttribute('data-date') || this.dataset.date || null;
+                // enable proceed to Step 2 (time selection)
+                const n2 = document.getElementById('next-to-step-2');
+                if (n2) n2.disabled = false;
+            });
+        });
+
+        document.querySelectorAll('.time-slot').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.time-slot').forEach(btn => btn.classList.remove('bg-blue-50', 'border-blue-500', 'text-blue-600'));
+                this.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-600');
+                selectedTime = this.getAttribute('data-time');
+            });
+        });
+
+        document.getElementById('doctor') && document.getElementById('doctor').addEventListener('change', function() {
+            selectedDoctor = this.value;
+        });
+
+        document.getElementById('confirm-appointment') && document.getElementById('confirm-appointment').addEventListener('click', function() {
+            document.getElementById('success-modal') && document.getElementById('success-modal').classList.remove('hidden');
+        });
+
+        document.getElementById('success-modal') && document.getElementById('success-modal').addEventListener('click', function() {
+            this.classList.add('hidden');
+            location.reload();
+        });
+
+        // --- Minimal TimeTrack slider JS (quick merge) ---
+        (function(){
+            // Populate calendar days: next 21 days
+            const daysContainer = document.getElementById('calendar-days');
+            const timeSlotsContainer = document.getElementById('time-slots');
+            const selectedDateDisplay = document.getElementById('selected-date-display');
+            const selectedTimeDisplay = document.getElementById('selected-time-display');
+            const successDetails = document.getElementById('success-details');
+
+            const today = new Date();
+            for (let i = 0; i < 21; i++) {
+                const d = new Date(today);
+                d.setDate(today.getDate() + i);
+                const btn = document.createElement('button');
+                btn.className = 'date-option mx-1 p-2 bg-white border border-blue-200 rounded-lg text-center hover:bg-blue-50 transition';
+                btn.innerHTML = `<div class="text-sm text-gray-500">${i===0?'Today':d.toLocaleDateString(undefined,{weekday:'short'})}</div>
+                                 <div class="font-bold text-gray-800">${d.getDate()}</div>
+                                 <div class="text-sm text-gray-500">${d.toLocaleDateString(undefined,{month:'short'})}</div>`;
+                btn.dataset.date = d.toISOString();
+                btn.addEventListener('click', function(){
+                    // mark date selection
+                    document.querySelectorAll('#calendar-days .date-option').forEach(x=>x.classList.remove('bg-blue-50','border-blue-500','text-blue-600'));
+                    this.classList.add('bg-blue-50','border-blue-500','text-blue-600');
+                    selectedDate = this.dataset.date;
+                    selectedDateDisplay && (selectedDateDisplay.innerText = new Date(selectedDate).toLocaleDateString());
+                });
+                daysContainer && daysContainer.appendChild(btn);
+            }
+
+            // Populate time slots
+            const times = ['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM'];
+            times.forEach(t => {
+                const b = document.createElement('button');
+                b.className = 'time-slot bg-white border border-blue-200 rounded-lg py-2 text-center hover:bg-blue-50 transition';
+                b.textContent = t;
+                b.dataset.time = t;
+                b.addEventListener('click', function(){
+                    document.querySelectorAll('#time-slots .time-slot').forEach(x=>x.classList.remove('bg-blue-50','border-blue-500','text-blue-600','selected'));
+                    this.classList.add('bg-blue-50','border-blue-500','text-blue-600','selected');
+                    selectedTime = this.dataset.time;
+                    selectedTimeDisplay && (selectedTimeDisplay.innerText = selectedTime);
+                });
+                timeSlotsContainer && timeSlotsContainer.appendChild(b);
+            });
+
+            // Slider nav helpers
+            const slides = ['date-slide','time-slide','confirm-slide','success-slide'].map(id=>document.getElementById(id));
+            let slideIndex = 0;
+            function showSlide(index){
+                slides.forEach((s,i)=>{
+                    if (!s) return;
+                    s.classList.remove('slide-active','slide-next','slide-prev');
+                    if (i < index) s.classList.add('slide-prev');
+                    else if (i === index) s.classList.add('slide-active');
+                    else s.classList.add('slide-next');
+                });
+            }
+            showSlide(slideIndex);
+
+            document.getElementById('date-next') && document.getElementById('date-next').addEventListener('click', function(){
+                slideIndex = Math.min(slideIndex+1, slides.length-1);
+                showSlide(slideIndex);
+            });
+            document.getElementById('time-prev') && document.getElementById('time-prev').addEventListener('click', function(){
+                slideIndex = Math.max(slideIndex-1,0);
+                showSlide(slideIndex);
+            });
+            document.getElementById('time-next') && document.getElementById('time-next').addEventListener('click', function(){
+                slideIndex = Math.min(slideIndex+1, slides.length-1);
+                showSlide(slideIndex);
+            });
+            document.getElementById('confirm-prev') && document.getElementById('confirm-prev').addEventListener('click', function(){
+                slideIndex = Math.max(slideIndex-1,0);
+                showSlide(slideIndex);
+            });
+            document.getElementById('confirm-submit') && document.getElementById('confirm-submit').addEventListener('click', function(){
+                slideIndex = slides.length-1;
+                showSlide(slideIndex);
+                // reflect to success details and Masti confirmation fields
+                const d = selectedDate ? new Date(selectedDate).toLocaleDateString() : 'Not selected';
+                const t = selectedTime || 'Not selected';
+                successDetails && (successDetails.innerText = `Date: ${d} • Time: ${t}`);
+                // mirror quick selection to Masti confirmation spans if present
+                const confDate = document.getElementById('confirm-date');
+                const confTime = document.getElementById('confirm-time');
+                if (confDate) confDate.innerText = d;
+                if (confTime) confTime.innerText = t;
+            });
+            document.getElementById('success-restart') && document.getElementById('success-restart').addEventListener('click', function(){
+                // reset quick picker
+                document.querySelectorAll('#calendar-days .date-option, #time-slots .time-slot').forEach(x=>x.classList.remove('bg-blue-50','border-blue-500','text-blue-600','selected'));
+                selectedDate = null; selectedTime = null;
+                document.getElementById('selected-date-display') && (document.getElementById('selected-date-display').innerText = 'Not selected');
+                document.getElementById('selected-time-display') && (document.getElementById('selected-time-display').innerText = 'Not selected');
+                slideIndex = 0; showSlide(slideIndex);
+            });
+        })();
+
+        // Ensure any "Book Appointment" text on this page is clickable too
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('button, a, span, div').forEach(el => {
+                const txt = (el.textContent || '').trim().toLowerCase();
+                if (!txt) return;
+                if (txt.includes('book appointment') || txt === 'book appointment') {
+                    if (el.tagName.toLowerCase() === 'a') {
+                        if (!el.getAttribute('href')) el.setAttribute('href', 'appointment.html');
+                    } else {
+                        const a = document.createElement('a');
+                        Array.from(el.attributes).forEach(attr => a.setAttribute(attr.name, attr.value));
+                        a.className = el.className || a.className;
+                        a.href = 'appointment.html';
+                        a.innerHTML = el.innerHTML;
+                        el.parentNode.replaceChild(a, el);
+                    }
+                }
+            });
+        });
+    </script>
+    <!-- huggingface badge (kept from TimeTrack file if you need it) -->
+    <script src="https://huggingface.co/deepsite/deepsite-badge.js"></script>
+</body>
+</html>
